@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Chat API</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; font-family: 'Poppins', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #eee; }
+        .box { max-width: 520px; padding: 32px; }
+        h1 { font-size: 2rem; margin-bottom: 12px; font-weight: 600; }
+        p { opacity: 0.92; line-height: 1.6; margin-bottom: 20px; }
+        ul { text-align: left; font-size: 0.9rem; opacity: 0.9; line-height: 1.8; padding-left: 1.25rem; }
+        code { background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 6px; font-size: 0.85em; }
+    </style>
+</head>
+<body>
+<div class="box">
+    <h1>AI Chat</h1>
+    <p>API phục vụ chat đa phương tiện, kiểm tra chính tả, tóm tắt, dịch và hướng dẫn học tập.</p>
+    <ul>
+        <li><code>POST /api/ai-chat</code> — prompt + file (≤5MB) + ảnh (≤10MB)</li>
+        <li><code>POST /api/spell-check</code> — JSON <code>text</code></li>
+        <li><code>POST /api/summarize</code> — JSON <code>text</code></li>
+        <li><code>POST /api/translate</code> — JSON <code>text</code>, <code>sourceLanguage</code>, <code>targetLanguage</code></li>
+        <li><code>POST /api/study-guide</code> — <code>subject</code>, câu hỏi / file / ảnh</li>
+    </ul>
+</div>
+</body>
+</html>

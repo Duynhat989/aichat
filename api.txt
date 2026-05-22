@@ -1,0 +1,228 @@
+================================================================================
+  TrueCallId — Tài liệu API (Phone Spam Checker)
+================================================================================
+
+Base URL:     https://callid.onewise.app/api
+(Trang dịch vụ: https://callid.onewise.app/)
+
+
+================================================================================
+1. TỔNG QUAN CÁC ENDPOINT
+================================================================================
+
+  Phương thức   Đường dẫn                      Ý nghĩa
+  -----------   -----------------------------  --------------------------------
+  POST          /api/phones/check            Tra cứu một số (body hoặc query)
+  GET           /api/phones/:phone            Tra cứu một số (số trong URL)
+  POST          /api/phones/check-bulk       Tra cứu nhiều số cùng lúc
+
+  Lưu ý: GET /api/phones/:phone  không bị trùng với "check" vì server đăng ký
+  route theo thứ tự:  /check, /check-bulk,  sau đó mới tới  /:phone
+
+
+================================================================================
+2. POST /api/phones/check
+================================================================================
+
+  Mục đích: Gửi một số điện thoại, nhận về thông tin spam (và cache nếu có).
+
+  Tham số (có thể dùng body JSON hoặc query string):
+    phone         (bắt buộc)  Chuỗi số cần tra.
+    countryCode   (tùy chọn)  Gợi ý mã quốc gia, ví dụ "VN" hoặc mã gọi dạng số;
+                              giúp phân tích số dạng nội địa.
+    forceRefresh  (tùy chọn)  true / "true" / 1 / "1" -> bỏ qua bản ghi cache
+                              còn hạn, gọi lại service ngoài.
+
+  Thành công: HTTP 200
+  Mẫu nội dung:
+    {
+      "success": true,
+      "message": "Phone checked successfully",
+      "data": { ... xem mục 5 — Cấu trúc kết quả một số ... }
+    }
+
+  Lỗi: HTTP 400 khi thiếu phone, số không hợp lệ, hoặc lỗi xử lý
+  Mẫu:
+    { "success": false, "message": "Phone is required" }
+    (hoặc message mô tả lỗi khác, ví dụ "Invalid phone number")
+
+  Ghi chú: phone có thể lấy từ body hoặc query; thường dùng POST với body JSON.
+
+  Ví dụ curl:
+    # Body tối thiểu
+    curl -sS -X POST "https://callid.onewise.app/api/phones/check" \
+      -H "Content-Type: application/json" \
+      -d "{\"phone\":\"0901234567\"}"
+    # Đủ tham số
+    curl -sS -X POST "https://callid.onewise.app/api/phones/check" \
+      -H "Content-Type: application/json" \
+      -d "{\"phone\":\"0901234567\",\"countryCode\":\"VN\",\"forceRefresh\":false}"
+    # Query
+    curl -sS -X POST "https://callid.onewise.app/api/phones/check?phone=0901234567&countryCode=VN"
+
+
+================================================================================
+3. GET /api/phones/:phone
+================================================================================
+
+  Mục đích: Giống POST /api/phones/check, nhưng số nằm trực tiếp trong URL
+            (tham số :phone), tiện cho client chỉ cần gọi GET.
+
+  Tham số:
+    :phone         (bắt buộc, trong path)  Số cần tra. Ký tự đặc biệt cần
+                                            encode theo chuẩn URL nếu có.
+    countryCode    (tùy chọn, query)        Giống mục 2
+    forceRefresh   (tùy chọn, query)        Giống mục 2
+
+  Phản hồi: Cùng dạng 200/400 như mục 2
+
+  Ví dụ: GET https://callid.onewise.app/api/phones/0901234567?countryCode=VN
+
+  Ví dụ curl:
+    curl -sS "https://callid.onewise.app/api/phones/0901234567"
+    curl -sS "https://callid.onewise.app/api/phones/0901234567?countryCode=VN&forceRefresh=true"
+    curl -sS "https://callid.onewise.app/api/phones/%2B84901234567?countryCode=VN"
+
+
+================================================================================
+4. POST /api/phones/check-bulk
+================================================================================
+
+  Mục đích: Gửi nhiều số trong một request; server chuẩn hóa, loại trùng,
+            đọc cache hàng loạt, số còn thiếu gọi ngoài với giới hạn song song.
+
+  Tham số (body JSON, có thể bổ sung query cho một số field):
+    phones         (bắt buộc)  Mảng JSON không rỗng. Mỗi phần tử:
+                              - chuỗi số, hoặc
+                              - object { "phone": "...", "countryCode": "..." }
+    countryCode    (tùy chọn)  Mã quốc gia mặc định cho phần tử chỉ là chuỗi
+    forceRefresh   (tùy chọn)  Bỏ qua cache còn hạn cho cả lô
+    concurrency    (tùy chọn)  Số tác vụ gọi ngoài chạy song song
+                              (mặc định 5; có thể cấu hình bằng env
+                              PHONE_LOOKUP_CONCURRENCY)
+
+  Giới hạn: Số số hợp lệ sau chuẩn hóa không vượt PHONE_BULK_MAX_SIZE
+            (mặc định 500, cấu hình bằng biến môi trường)
+
+  Thành công: HTTP 200
+  Mẫu nội dung:
+    {
+      "success": true,
+      "message": "Bulk phone check completed",
+      "data": {
+        "totalRequested":  <số phần tử mảng phones gửi lên>,
+        "totalProcessed":  <số số hợp lệ, không trùng sau chuẩn hóa>,
+        "cacheHits":      <số số lấy từ cache còn hạn (khi không forceRefresh)>,
+        "externalLookups": <số số phải gọi service ngoài trong lần này>,
+        "items": [ ... mỗi phần tử cùng cấu trúc mục 5 ... ]
+      }
+    }
+
+  Lỗi: HTTP 400
+    - "phones must be a non-empty array" nếu mảng rỗng hoặc sai kiểu
+    - "No valid phone numbers provided" nếu không còn số hợp lệ
+    - "Maximum 500 phone numbers per request" (số 500 theo cấu hình env) nếu vượt hạn
+    - Hoặc message lỗi xử lý khác
+
+  Ví dụ curl:
+    curl -sS -X POST "https://callid.onewise.app/api/phones/check-bulk" \
+      -H "Content-Type: application/json" \
+      -d "{\"phones\":[\"0901234567\",\"0912345678\"],\"concurrency\":5}"
+    curl -sS -X POST "https://callid.onewise.app/api/phones/check-bulk" \
+      -H "Content-Type: application/json" \
+      -d "{\"phones\":[\"0901234567\",{\"phone\":\"0912345678\",\"countryCode\":\"VN\"}],\"forceRefresh\":true,\"concurrency\":8}"
+
+
+================================================================================
+5. CẤU TRÚC KẾT QUẢ CHO MỘT SỐ (trường "data" hoặc mỗi phần tử items)
+================================================================================
+
+  Các trường dưới đây mô tả object tra cứu một số thành công (hoặc tương đương
+  sau khi gọi ngoài / cache):
+
+  phone                Chuỗi số theo cách hệ thống lưu cùng metadata
+  normalizedPhone      Dạng E.164 bỏ dấu + — dùng làm khóa cache
+  e164Phone            Số dạng E.164 (có ký tự +)
+  country              Mã quốc gia 2 chữ, hoặc null
+  countryCallingCode  Mã gọi quốc tế, hoặc null
+  nationalNumber       Phần số nội địa, hoặc null
+  isSpam                 true/false — có bị gắn nhãn spam
+  spamScore              Số thực, điểm rủi ro / spam
+  status                 Trạng thái từ service ngoài hoặc nội bộ
+  source                 Nguồn dữ liệu, ví dụ "external-service"
+  cached                 true nếu dùng kết quả từ cache còn hạn; false nếu vừa gọi ngoài
+  checkedAt              Thời điểm cập nhật / ghi nhận
+  expiresAt              Hết hạn cache; null nếu không áp dụng
+  rawResponse            Object JSON từ phía ngoài (và thông tin phoneMeta),
+                        hoặc null
+
+  Lưu ý: Một số lỗi từng dòng khi chạy bulk (hiếm) có thể trả về phần tử
+  với status nội bộ dạng "processing_error" kèm message trong rawResponse.
+
+
+================================================================================
+6. MÃ LỖI DÙNG CHUNG
+================================================================================
+
+  404  Route không tồn tại:
+       { "success": false, "message": "Route not found" }
+
+  500  Lỗi nội bộ chưa bắt (exception):
+       { "success": false, "message": "Internal server error" }
+
+  400  Thường dùng cho lỗi nghiệp vụ/validation; xem từng API ở trên.
+
+  200  Thành công: success: true, kèm message và data tương ứng từng API.
+
+
+================================================================================
+7. CẤU HÌNH LIÊN QUAN TỚI API (biến môi trường, tham chiếu nhanh)
+================================================================================
+
+  PORT                      Cổng lắng nghe (mặc định 2053)
+  PHONE_LOOKUP_URL          URL service ngoài (có thể dùng {phone} trong chuỗi)
+  PHONE_LOOKUP_METHOD       GET hoặc POST
+  PHONE_LOOKUP_API_KEY      Gửi kèm header nếu service yêu cầu
+  PHONE_LOOKUP_TIMEOUT_MS  Thời gian chờ HTTP tối đa
+  PHONE_DEFAULT_COUNTRY     Gợi ý mặc định khi parse số (mặc định VN)
+  PHONE_CACHE_TTL_MINUTES   Thời gian sống cache (mặc định 1440 phút)
+  PHONE_BULK_MAX_SIZE      Giới hạn số số tối đa mỗi lần bulk
+  PHONE_LOOKUP_CONCURRENCY  Mức song song mặc định khi gọi ngoài (bulk)
+
+  Chi tiết thêm: xem file .env.example trong cùng thư mục dự án.
+
+
+================================================================================
+8. TỔNG HỢP LỆNH curl (MỌI REQUEST)
+================================================================================
+
+  Host: https://callid.onewise.app
+
+  POST /api/phones/check
+    curl -sS -X POST "https://callid.onewise.app/api/phones/check" \
+      -H "Content-Type: application/json" -d "{\"phone\":\"0901234567\"}"
+    curl -sS -X POST "https://callid.onewise.app/api/phones/check" \
+      -H "Content-Type: application/json" \
+      -d "{\"phone\":\"0901234567\",\"countryCode\":\"VN\",\"forceRefresh\":false}"
+    curl -sS -X POST "https://callid.onewise.app/api/phones/check?phone=0901234567&countryCode=VN"
+
+  GET /api/phones/:phone
+    curl -sS "https://callid.onewise.app/api/phones/0901234567"
+    curl -sS "https://callid.onewise.app/api/phones/0901234567?countryCode=VN&forceRefresh=true"
+    curl -sS "https://callid.onewise.app/api/phones/%2B84901234567?countryCode=VN"
+
+  POST /api/phones/check-bulk
+    curl -sS -X POST "https://callid.onewise.app/api/phones/check-bulk" \
+      -H "Content-Type: application/json" \
+      -d "{\"phones\":[\"0901234567\",\"0912345678\"],\"concurrency\":5}"
+    curl -sS -X POST "https://callid.onewise.app/api/phones/check-bulk" \
+      -H "Content-Type: application/json" \
+      -d "{\"phones\":[\"0901234567\",{\"phone\":\"0912345678\",\"countryCode\":\"VN\"}],\"forceRefresh\":true,\"concurrency\":8}"
+
+  404 (tùy chọn)
+    curl -sS "https://callid.onewise.app/api/duong-dan-khong-co"
+
+
+================================================================================
+Hết tài liệu.
+================================================================================
