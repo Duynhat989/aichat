@@ -320,7 +320,7 @@ const aiChatController = {
         success: true,
         data: {
           fileId,
-          details: filesTemp.get(fileId)
+          // details: filesTemp.get(fileId)
         }
       });
     } catch (error) {
