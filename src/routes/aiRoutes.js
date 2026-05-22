@@ -26,7 +26,7 @@ router.get('/models', aiChatController.getModel);
 router.post(
   '/chat-completion',
   (req, res, next) => traffic('aichat', next),
-  aiChatController.chatCompletion
+  aiChatController.chatCompletionWithLimit
 );
 
 
@@ -37,7 +37,7 @@ router.post(
 router.post(
   '/spell-check',
   (req, res, next) => traffic('spellchecker', next),
-  aiChatController.chatCompletion
+  aiChatController.chatCompletionWithLimit
 );
 
 // =========================
@@ -47,7 +47,7 @@ router.post(
 router.post(
   '/summarize',
   (req, res, next) => traffic('summarize', next),
-  aiChatController.chatCompletion
+  aiChatController.chatCompletionWithLimit
 );
 
 // =========================
@@ -57,7 +57,7 @@ router.post(
 router.post(
   '/translate',
   (req, res, next) => traffic('translate', next),
-  aiChatController.chatCompletion
+  aiChatController.chatCompletionWithLimit
 );
 
 // =========================
@@ -67,8 +67,11 @@ router.post(
 router.post(
   '/study-guide',
   (req, res, next) => traffic('studyguide', next),
-  aiChatController.chatCompletion
+  aiChatController.chatCompletionWithLimit
 );
+
+
+
 
 // =========================
 // ADD FILE
