@@ -314,20 +314,23 @@
             <div class="form-group">
               <label>Loại thông báo</label>
               <div class="chip-group" id="sendTypes">
-                <button type="button" class="chip active" data-type="plant_reminder">plant_reminder</button>
-                <button type="button" class="chip" data-type="promo">promo</button>
-                <button type="button" class="chip" data-type="system">system</button>
-                <button type="button" class="chip" data-type="ai_limit">ai_limit</button>
+                <button type="button" class="chip active" data-type="plant_reminder">Nhắc cây</button>
+                <button type="button" class="chip" data-type="promo">Khuyến mãi</button>
+                <button type="button" class="chip" data-type="system">Hệ thống</button>
+                <button type="button" class="chip" data-type="ai_limit">Hết lượt AI</button>
               </div>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="sendScreen">Screen</label>
-                <input id="sendScreen" placeholder="plants">
-              </div>
-              <div class="form-group">
-                <label for="sendPlantId">Plant ID</label>
-                <input id="sendPlantId" placeholder="plant-123">
+            <div id="sendExtras" class="form-extras">
+              <p class="extras-hint">Tuỳ chọn — khi user bấm thông báo, app mở đúng màn hình (chỉ dùng cho <em>Nhắc cây</em>)</p>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="sendScreen">Màn hình mở</label>
+                  <input id="sendScreen" placeholder="plants">
+                </div>
+                <div class="form-group">
+                  <label for="sendPlantId">ID cây</label>
+                  <input id="sendPlantId" placeholder="plant-123">
+                </div>
               </div>
             </div>
             <button type="button" class="btn btn-primary" data-action="sendPush">Gửi push ngay</button>
@@ -341,13 +344,13 @@
               </div>
             </div>
             <ul class="tip-list">
-              <li><strong>plant_reminder</strong> — Nhắc tưới / chăm sóc cây</li>
-              <li><strong>promo</strong> — Khuyến mãi Premium</li>
-              <li><strong>system</strong> — Thông báo hệ thống, bảo trì</li>
-              <li><strong>ai_limit</strong> — Hết lượt AI miễn phí</li>
+              <li><strong>Nhắc cây</strong> — Nhắc tưới / chăm sóc cây (có thể thêm màn hình + ID cây)</li>
+              <li><strong>Khuyến mãi</strong> — Ưu đãi Premium</li>
+              <li><strong>Hệ thống</strong> — Bảo trì, cập nhật app</li>
+              <li><strong>Hết lượt AI</strong> — User free đã dùng hết quota</li>
             </ul>
             <div class="tip-box">
-              <strong>Mẹo:</strong> Vào mục <em>Người dùng</em>, bấm <em>Gửi push</em> trên dòng user để tự điền User ID.
+              <strong>Gửi push cơ bản:</strong> chỉ cần User ID + nội dung. Các trường màn hình / ID cây là tuỳ chọn để app biết mở đâu khi user bấm vào thông báo.
             </div>
           </div>
         </div>

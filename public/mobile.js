@@ -171,6 +171,18 @@ function userIdOf(u) {
   return u.userId || u.legacyGreenId || u.id;
 }
 
+function updateSendExtras() {
+  const extras = document.getElementById('sendExtras');
+  if (!extras) return;
+  if (selectedSendType === 'plant_reminder') {
+    extras.classList.remove('hidden');
+  } else {
+    extras.classList.add('hidden');
+    document.getElementById('sendScreen').value = '';
+    document.getElementById('sendPlantId').value = '';
+  }
+}
+
 function goToSendPush(userId) {
   document.getElementById('sendUserId').value = userId;
   const sendBtn = document.querySelector('.nav-link[data-panel="send"]');
@@ -581,8 +593,11 @@ function bindActions() {
       document.querySelectorAll('#sendTypes .chip').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       selectedSendType = btn.dataset.type;
+      updateSendExtras();
     });
   });
+
+  updateSendExtras();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
