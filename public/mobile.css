@@ -870,6 +870,12 @@ textarea { min-height: 100px; resize: vertical; }
   color: var(--red);
 }
 
+.badge-mock {
+  background: var(--amber-bg);
+  color: var(--amber);
+  border: 1px solid #fde68a;
+}
+
 .btn-table {
   padding: 5px 12px;
   font-size: 0.75rem;

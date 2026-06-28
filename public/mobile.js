@@ -100,9 +100,36 @@ async function checkDbHealth() {
       setDbStatus(false, 'MySQL chưa sẵn sàng');
       toast(data.dbError || 'Kiểm tra MYSQL_PASSWORD trong .env', false);
     }
+    updateFcmBanner(data.fcm);
   } catch (e) {
     setDbStatus(false, 'API không phản hồi');
     toast('Không gọi được API: ' + e.message, false);
+  }
+}
+
+function updateFcmBanner(fcm) {
+  let el = document.getElementById('fcmBanner');
+  if (!fcm) return;
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'fcmBanner';
+    el.className = 'alert-warn hidden';
+    const content = document.querySelector('.content');
+    if (content) content.insertBefore(el, content.firstChild);
+  }
+  if (fcm.mock) {
+    el.classList.remove('hidden');
+    el.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+      '<div><strong>FCM đang chạy chế độ MOCK</strong> — server ghi log "sent" nhưng <em>không gửi push thật</em> tới điện thoại. ' +
+      'Đặt <code>CANOPY_FCM_MOCK=false</code> và cấu hình Firebase service account trên server.</div>';
+  } else if (!fcm.configured) {
+    el.classList.remove('hidden');
+    el.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+      '<div><strong>FCM chưa cấu hình đầy đủ</strong> — thiếu <code>CANOPY_FCM_PROJECT_ID</code> hoặc file service account.</div>';
+  } else {
+    el.classList.add('hidden');
   }
 }
 
@@ -462,7 +489,10 @@ async function broadcastPush(confirmed) {
   }
 }
 
-function statusBadge(status) {
+function statusBadge(status, fcmResponse) {
+  if (fcmResponse && fcmResponse.mock) {
+    return '<span class="badge badge-mock" title="FCM mock — không gửi thật tới thiết bị">mock</span>';
+  }
   const cls = status === 'sent' ? 'badge-sent' : 'badge-' + status;
   return '<span class="badge ' + cls + '">' + status + '</span>';
 }
@@ -481,7 +511,7 @@ async function loadLogs() {
       '<td class="muted" style="white-space:nowrap">' + new Date(l.sentAt).toLocaleString('vi') + '</td>' +
       '<td><strong>' + escapeHtml(l.title) + '</strong></td>' +
       '<td class="truncate muted" title="' + escapeHtml(l.body || '') + '">' + escapeHtml((l.body || '').slice(0, 60)) + '</td>' +
-      '<td>' + statusBadge(l.status) + '</td>' +
+      '<td>' + statusBadge(l.status, l.fcmResponse) + '</td>' +
       '</tr>'
     ).join('');
   } catch (e) {

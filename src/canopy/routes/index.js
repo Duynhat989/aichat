@@ -13,11 +13,21 @@ const { isCanopyDatabaseReady, getLastDbError } = require('../config/database');
 const router = express.Router();
 
 router.get('/health', (req, res) => {
+  const fcmMock = String(process.env.CANOPY_FCM_MOCK || 'true').toLowerCase() === 'true';
+  const fcmProjectId = process.env.CANOPY_FCM_PROJECT_ID || '';
+  const fcmSaPath = process.env.CANOPY_FCM_SERVICE_ACCOUNT_PATH || '';
+  const fs = require('fs');
+  const fcmSaExists = Boolean(fcmSaPath && fs.existsSync(fcmSaPath));
   res.json({
     success: true,
     service: 'canopy-api',
     dbReady: isCanopyDatabaseReady(),
     dbError: getLastDbError(),
+    fcm: {
+      mock: fcmMock,
+      configured: Boolean(fcmProjectId && fcmSaExists),
+      projectId: fcmProjectId || null
+    },
     time: new Date().toISOString()
   });
 });
