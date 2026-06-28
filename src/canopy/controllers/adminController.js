@@ -1,6 +1,6 @@
 const { ok, fail } = require('../utils/response');
-const { getModels } = require('../models');
-const { getStats, listUsers } = require('../services/userService');
+const { getStats, listUsers, createUserAdmin, deleteUserAdmin, setUserPremiumAdmin, formatUser } = require('../services/userService');
+const { getDailyActiveStats } = require('../services/activityService');
 const { sendToUser, broadcast, listNotificationLogs } = require('../services/notificationService');
 
 const adminController = {
@@ -14,6 +14,51 @@ const adminController = {
     const limit = Math.min(Number(req.query.limit || 20), 100);
     const search = String(req.query.search || '');
     const data = await listUsers({ page, limit, search });
+    return ok(res, { data });
+  },
+
+  async createUser(req, res) {
+    try {
+      const { deviceId, platform, appVersion, locale, legacyUserId, isPremium } = req.body || {};
+      const data = await createUserAdmin({ deviceId, platform, appVersion, locale, legacyUserId, isPremium });
+      return ok(res, { data }, 201);
+    } catch (e) {
+      const status = e.code === 'CONFLICT' ? 409 : e.code === 'VALIDATION' ? 400 : 500;
+      return fail(res, e.code || 'CREATE_FAILED', e.message, status);
+    }
+  },
+
+  async deleteUser(req, res) {
+    try {
+      const userId = String(req.params.userId || '');
+      if (!userId) return fail(res, 'VALIDATION', 'userId is required');
+      const data = await deleteUserAdmin(userId);
+      return ok(res, { data, message: 'User deleted' });
+    } catch (e) {
+      const status = e.code === 'NOT_FOUND' ? 404 : 500;
+      return fail(res, e.code || 'DELETE_FAILED', e.message, status);
+    }
+  },
+
+  async setPremium(req, res) {
+    try {
+      const userId = String(req.params.userId || '');
+      if (!userId) return fail(res, 'VALIDATION', 'userId is required');
+      const { isPremium, premiumPlan, premiumExpiresAt, days } = req.body || {};
+      if (typeof isPremium !== 'boolean') {
+        return fail(res, 'VALIDATION', 'isPremium (boolean) is required');
+      }
+      const data = await setUserPremiumAdmin(userId, { isPremium, premiumPlan, premiumExpiresAt, days });
+      return ok(res, { data, message: isPremium ? 'Premium granted' : 'Premium revoked' });
+    } catch (e) {
+      const status = e.code === 'NOT_FOUND' ? 404 : e.code === 'VALIDATION' ? 400 : 500;
+      return fail(res, e.code || 'PREMIUM_FAILED', e.message, status);
+    }
+  },
+
+  async dailyActive(req, res) {
+    const days = Number(req.query.days || 14);
+    const data = await getDailyActiveStats({ days });
     return ok(res, { data });
   },
 
@@ -46,16 +91,11 @@ const adminController = {
   },
 
   async findUser(req, res) {
-    const { User } = getModels();
     const q = String(req.query.q || '');
     if (!q) return fail(res, 'VALIDATION', 'q is required');
-    const user = await User.findOne({
-      where: {
-        [require('sequelize').Op.or]: [{ id: q }, { legacyGreenId: q }, { deviceId: q }]
-      }
-    });
+    const { findUserByIdentifier } = require('../services/userService');
+    const user = await findUserByIdentifier(q);
     if (!user) return fail(res, 'NOT_FOUND', 'User not found', 404);
-    const { formatUser } = require('../services/userService');
     return ok(res, { data: formatUser(user) });
   }
 };

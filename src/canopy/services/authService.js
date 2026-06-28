@@ -2,6 +2,7 @@ const { Op } = require('sequelize');
 const { getModels } = require('../models');
 const { generateGreenId } = require('../utils/greenId');
 const { hashToken, randomToken, signAccessToken, refreshExpiresAt } = require('../utils/tokens');
+const { recordDailyActive } = require('./activityService');
 
 async function registerDevice({ deviceId, platform, appVersion, locale, legacyUserId }) {
   const { User, RefreshToken } = getModels();
@@ -34,6 +35,8 @@ async function registerDevice({ deviceId, platform, appVersion, locale, legacyUs
       lastSeenAt: new Date()
     });
   }
+
+  await recordDailyActive(user.id);
 
   const refreshToken = randomToken();
   await RefreshToken.create({

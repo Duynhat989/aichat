@@ -5,250 +5,500 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Canopy Admin</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="mobile.css">
 </head>
 <body>
 
-<div id="loginScreen" class="login-wrap">
-  <div class="login-bg"></div>
-  <div class="login-box card glass">
-    <div class="login-logo">🌿</div>
-    <h1>Canopy <span class="accent">Admin</span></h1>
-    <p>Quản lý user, push notification &amp; quota AI</p>
-    <label>Admin API Key</label>
-    <input id="apiKeyInput" type="password" placeholder="CANOPY_ADMIN_API_KEY" autocomplete="off">
-    <label>API Base URL</label>
-    <input id="baseUrlInput" type="text" value="/v1">
-    <button type="button" class="btn btn-primary" data-action="saveLogin">Đăng nhập</button>
+<!-- Login -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <h1>Canopy Admin</h1>
+      <p>Quản lý người dùng, push notification &amp; quota AI</p>
+    </div>
+    <div class="form-group">
+      <label for="apiKeyInput">Admin API Key</label>
+      <input id="apiKeyInput" type="password" placeholder="Nhập CANOPY_ADMIN_API_KEY" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label for="baseUrlInput">API Base URL</label>
+      <input id="baseUrlInput" type="text" value="/v1" placeholder="/v1">
+      <span class="hint">Mặc định: <code>/v1</code> (cùng domain)</span>
+    </div>
+    <button type="button" class="btn btn-primary btn-lg" data-action="saveLogin">Đăng nhập</button>
   </div>
 </div>
 
-<div id="app" class="app-shell hidden">
+<!-- App -->
+<div id="app" class="app hidden">
   <div id="sidebarOverlay" class="sidebar-overlay hidden" data-action="closeSidebar"></div>
 
   <aside id="sidebar" class="sidebar">
     <div class="sidebar-brand">
-      <span class="brand-icon">🌿</span>
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
       <div>
         <strong>Canopy</strong>
-        <small>Admin Console</small>
+        <span>Admin Console</span>
       </div>
     </div>
 
     <nav class="sidebar-nav">
-      <p class="nav-label">Menu</p>
-      <button type="button" class="nav-item active" data-panel="dashboard" data-action="switchPanel" data-title="Tổng quan">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      <p class="nav-section">Chính</p>
+      <button type="button" class="nav-link active" data-panel="dashboard" data-action="switchPanel" data-title="Tổng quan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
         Tổng quan
       </button>
-      <button type="button" class="nav-item" data-panel="send" data-action="switchPanel" data-title="Gửi push">
+      <button type="button" class="nav-link" data-panel="users" data-action="switchPanel" data-title="Người dùng">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Người dùng
+      </button>
+
+      <p class="nav-section">Thông báo</p>
+      <button type="button" class="nav-link" data-panel="send" data-action="switchPanel" data-title="Gửi push">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
         Gửi push
       </button>
-      <button type="button" class="nav-item" data-panel="broadcast" data-action="switchPanel" data-title="Broadcast">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5a7 7 0 0 1 7 7"/><path d="M12 19a7 7 0 0 1-7-7"/></svg>
+      <button type="button" class="nav-link" data-panel="broadcast" data-action="switchPanel" data-title="Broadcast">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M7.76 16.24a6 6 0 0 1 0-8.49"/><path d="M4.93 19.07a10 10 0 0 1 0-14.14"/></svg>
         Broadcast
       </button>
-      <button type="button" class="nav-item" data-panel="users" data-action="switchPanel" data-title="Người dùng">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Người dùng
-      </button>
-      <button type="button" class="nav-item" data-panel="logs" data-action="switchPanel" data-title="Nhật ký push">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+      <button type="button" class="nav-link" data-panel="logs" data-action="switchPanel" data-title="Nhật ký push">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
         Nhật ký
       </button>
     </nav>
 
-    <div class="sidebar-footer">
-      <button type="button" class="nav-item" data-panel="settings" data-action="switchPanel" data-title="Cài đặt">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2"/></svg>
+    <div class="sidebar-foot">
+      <button type="button" class="nav-link" data-panel="settings" data-action="switchPanel" data-title="Cài đặt">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Cài đặt
       </button>
-      <div class="db-pill" id="dbStatus">
-        <span class="db-dot"></span>
+      <div class="status-pill" id="dbStatus">
+        <span class="status-dot"></span>
         <span id="dbStatusText">Đang kiểm tra...</span>
       </div>
     </div>
   </aside>
 
-  <div class="main-wrap">
+  <div class="main">
     <header class="topbar">
-      <button type="button" class="icon-btn" id="menuToggle" data-action="toggleSidebar" aria-label="Menu">
+      <button type="button" class="icon-btn menu-btn" id="menuToggle" data-action="toggleSidebar" aria-label="Menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
       </button>
-      <div class="topbar-title">
+      <div class="topbar-main">
         <h1 id="pageTitle">Tổng quan</h1>
-        <span class="badge" id="connBadge">/v1</span>
+        <span class="url-badge" id="connBadge">/v1</span>
       </div>
-      <button type="button" class="icon-btn refresh-btn" data-action="loadStats" title="Làm mới">
+      <button type="button" class="btn btn-secondary btn-sm" data-action="loadStats">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Làm mới
       </button>
     </header>
 
     <div id="toast" class="toast"></div>
 
     <main class="content">
+
+      <!-- Dashboard -->
       <section id="panel-dashboard" class="panel active">
-        <div class="stats-grid">
+        <div class="stats-row stats-row-4">
           <div class="stat-card">
-            <div class="stat-icon users">👥</div>
-            <div class="stat-body">
-              <span class="stat-num" id="stUsers">—</span>
-              <span class="stat-label">Tổng users</span>
+            <div class="stat-icon blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <span class="stat-value" id="stUsers">—</span>
+              <span class="stat-label">Tổng người dùng</span>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon premium">⭐</div>
-            <div class="stat-body">
-              <span class="stat-num" id="stPremium">—</span>
+            <div class="stat-icon teal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <div>
+              <span class="stat-value" id="stActiveToday">—</span>
+              <span class="stat-label">Truy cập hôm nay</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon gold">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div>
+              <span class="stat-value" id="stPremium">—</span>
               <span class="stat-label">Premium</span>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon push">🔔</div>
-            <div class="stat-body">
-              <span class="stat-num" id="stNotif">—</span>
+            <div class="stat-icon green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <div>
+              <span class="stat-value" id="stNotif">—</span>
               <span class="stat-label">Push đã gửi</span>
             </div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-head">
-            <h2>Tìm user nhanh</h2>
-            <p>UUID, greenid hoặc deviceId</p>
+          <div class="card-header row">
+            <div>
+              <h2>Thống kê truy cập hàng ngày (DAU)</h2>
+              <p>Số user hoạt động mỗi ngày — hôm qua: <strong id="stActiveYesterday">—</strong></p>
+            </div>
+            <select id="dauDays" class="select-inline">
+              <option value="7">7 ngày</option>
+              <option value="14" selected>14 ngày</option>
+              <option value="30">30 ngày</option>
+            </select>
           </div>
-          <div class="input-row">
-            <input id="findQ" placeholder="greenid1234567890">
-            <button type="button" class="btn btn-primary btn-sm" data-action="findUser">Tìm</button>
+          <div id="dauChart" class="dau-chart"></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2>Tìm người dùng</h2>
+                <p>Nhập greenid, UUID hoặc deviceId</p>
+              </div>
+            </div>
+            <div class="search-bar">
+              <input id="findQ" placeholder="VD: greenid1081635559" type="search">
+              <button type="button" class="btn btn-primary" data-action="findUser">Tìm kiếm</button>
+            </div>
+            <div id="findResult" class="find-result"></div>
           </div>
-          <div id="findResult"></div>
+
+          <div class="card card-tips">
+            <div class="card-header">
+              <div>
+                <h2>Thao tác nhanh</h2>
+                <p>Chuyển nhanh tới các mục thường dùng</p>
+              </div>
+            </div>
+            <div class="quick-actions">
+              <button type="button" class="quick-btn" data-panel="send" data-action="switchPanel" data-title="Gửi push">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                Gửi push 1 user
+              </button>
+              <button type="button" class="quick-btn" data-panel="broadcast" data-action="switchPanel" data-title="Broadcast">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                Gửi broadcast
+              </button>
+              <button type="button" class="quick-btn" data-panel="users" data-action="switchPanel" data-title="Người dùng">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                Xem danh sách user
+              </button>
+              <button type="button" class="quick-btn" data-panel="logs" data-action="switchPanel" data-title="Nhật ký push">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                Xem nhật ký push
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section id="panel-send" class="panel">
+      <!-- Users -->
+      <section id="panel-users" class="panel">
         <div class="card">
-          <div class="card-head">
-            <h2>Gửi push — 1 user</h2>
-            <p>FCM notification tới một thiết bị</p>
-          </div>
-          <label>User ID</label>
-          <input id="sendUserId" placeholder="greenid1234567890">
-          <label>Tiêu đề</label>
-          <input id="sendTitle" value="Canopy">
-          <label>Nội dung</label>
-          <textarea id="sendBody" placeholder="Đến giờ tưới cây Monstera" rows="3"></textarea>
-          <label>Loại thông báo</label>
-          <div class="type-grid" id="sendTypes">
-            <button type="button" class="type-btn active" data-type="plant_reminder">🌱 plant_reminder</button>
-            <button type="button" class="type-btn" data-type="promo">🏷 promo</button>
-            <button type="button" class="type-btn" data-type="system">⚙️ system</button>
-            <button type="button" class="type-btn" data-type="ai_limit">🤖 ai_limit</button>
-          </div>
-          <div class="row">
+          <div class="card-header row">
             <div>
-              <label>Screen</label>
-              <input id="sendScreen" placeholder="plants">
-            </div>
-            <div>
-              <label>Plant ID</label>
-              <input id="sendPlantId" placeholder="plant-123">
+              <h2>Thêm người dùng</h2>
+              <p>Tạo tài khoản thiết bị mới (admin)</p>
             </div>
           </div>
-          <button type="button" class="btn btn-primary" data-action="sendPush">Gửi push</button>
-        </div>
-      </section>
-
-      <section id="panel-broadcast" class="panel">
-        <div class="card">
-          <div class="card-head">
-            <h2>Broadcast</h2>
-            <p>Gửi hàng loạt theo locale / premium</p>
+          <div class="form-row form-row-3">
+            <div class="form-group">
+              <label for="newDeviceId">Device ID <span class="req">*</span></label>
+              <input id="newDeviceId" placeholder="550e8400-e29b-41d4-a716-446655440000">
+            </div>
+            <div class="form-group">
+              <label for="newPlatform">Platform <span class="req">*</span></label>
+              <select id="newPlatform">
+                <option value="android">android</option>
+                <option value="ios">ios</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="newAppVersion">App version <span class="req">*</span></label>
+              <input id="newAppVersion" value="1.0.0" placeholder="1.0.0">
+            </div>
           </div>
-          <label>Tiêu đề</label>
-          <input id="bcTitle" value="Canopy">
-          <label>Nội dung</label>
-          <textarea id="bcBody" placeholder="Khuyến mãi Premium" rows="3"></textarea>
-          <div class="row">
-            <div>
-              <label>Locale</label>
-              <select id="bcLocale">
-                <option value="">Tất cả</option>
+          <div class="form-row form-row-3">
+            <div class="form-group">
+              <label for="newLocale">Locale</label>
+              <select id="newLocale">
                 <option value="vi">vi</option>
                 <option value="en">en</option>
               </select>
             </div>
-            <div>
-              <label>Premium</label>
-              <select id="bcPremium">
-                <option value="">Tất cả</option>
-                <option value="true">Premium only</option>
-                <option value="false">Free only</option>
+            <div class="form-group">
+              <label for="newLegacyId">Green ID (tuỳ chọn)</label>
+              <input id="newLegacyId" placeholder="Để trống = tự sinh">
+            </div>
+            <div class="form-group">
+              <label for="newPremium">Premium</label>
+              <select id="newPremium">
+                <option value="false">Free</option>
+                <option value="true">Premium</option>
               </select>
             </div>
           </div>
-          <label>data.type</label>
-          <select id="bcType">
-            <option value="promo">promo</option>
-            <option value="system">system</option>
-            <option value="plant_reminder">plant_reminder</option>
-          </select>
-          <div class="btn-row">
-            <button type="button" class="btn btn-primary" data-action="broadcastPush">Gửi broadcast</button>
-            <button type="button" class="btn btn-outline-danger" data-action="confirmBroadcast">Xác nhận gửi</button>
-          </div>
+          <button type="button" class="btn btn-primary" data-action="createUser">Thêm người dùng</button>
         </div>
-      </section>
 
-      <section id="panel-users" class="panel">
         <div class="card">
-          <div class="card-head">
-            <h2>Danh sách user</h2>
-            <p>Tất cả thiết bị đã đăng ký</p>
+          <div class="card-header row">
+            <div>
+              <h2>Danh sách người dùng</h2>
+              <p>Tất cả thiết bị đã đăng ký</p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" data-action="loadUsers">Tải lại</button>
           </div>
-          <div class="input-row">
-            <input id="userSearch" placeholder="Tìm greenid / deviceId">
-            <button type="button" class="btn btn-primary btn-sm" data-action="loadUsers">Tải</button>
+          <div class="search-bar">
+            <input id="userSearch" placeholder="Lọc theo greenid hoặc deviceId..." type="search">
+            <button type="button" class="btn btn-primary" data-action="loadUsers">Tìm</button>
           </div>
-          <div id="userList" class="list-body"></div>
-          <button type="button" class="btn btn-ghost hidden" id="userMore" data-action="loadUsersMore">Tải thêm</button>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Platform</th>
+                  <th>Locale</th>
+                  <th>Phiên bản</th>
+                  <th>Gói</th>
+                  <th>Truy cập cuối</th>
+                  <th>Device ID</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="userList"></tbody>
+            </table>
+          </div>
+          <div class="table-foot">
+            <button type="button" class="btn btn-ghost hidden" id="userMore" data-action="loadUsersMore">Tải thêm</button>
+          </div>
         </div>
       </section>
 
+      <!-- Send push -->
+      <section id="panel-send" class="panel">
+        <div class="grid-2 wide-right">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2>Gửi push — 1 người dùng</h2>
+                <p>Gửi FCM notification tới một thiết bị cụ thể</p>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="sendUserId">User ID <span class="req">*</span></label>
+              <input id="sendUserId" placeholder="greenid1081635559">
+            </div>
+            <div class="form-group">
+              <label for="sendTitle">Tiêu đề</label>
+              <input id="sendTitle" value="Canopy">
+            </div>
+            <div class="form-group">
+              <label for="sendBody">Nội dung <span class="req">*</span></label>
+              <textarea id="sendBody" placeholder="Đến giờ tưới cây Monstera" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Loại thông báo</label>
+              <div class="chip-group" id="sendTypes">
+                <button type="button" class="chip active" data-type="plant_reminder">plant_reminder</button>
+                <button type="button" class="chip" data-type="promo">promo</button>
+                <button type="button" class="chip" data-type="system">system</button>
+                <button type="button" class="chip" data-type="ai_limit">ai_limit</button>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="sendScreen">Screen</label>
+                <input id="sendScreen" placeholder="plants">
+              </div>
+              <div class="form-group">
+                <label for="sendPlantId">Plant ID</label>
+                <input id="sendPlantId" placeholder="plant-123">
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary" data-action="sendPush">Gửi push ngay</button>
+          </div>
+
+          <div class="card card-tips">
+            <div class="card-header">
+              <div>
+                <h2>Hướng dẫn</h2>
+                <p>Các loại notification phổ biến</p>
+              </div>
+            </div>
+            <ul class="tip-list">
+              <li><strong>plant_reminder</strong> — Nhắc tưới / chăm sóc cây</li>
+              <li><strong>promo</strong> — Khuyến mãi Premium</li>
+              <li><strong>system</strong> — Thông báo hệ thống, bảo trì</li>
+              <li><strong>ai_limit</strong> — Hết lượt AI miễn phí</li>
+            </ul>
+            <div class="tip-box">
+              <strong>Mẹo:</strong> Vào mục <em>Người dùng</em>, bấm <em>Gửi push</em> trên dòng user để tự điền User ID.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Broadcast -->
+      <section id="panel-broadcast" class="panel">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2>Broadcast — Gửi hàng loạt</h2>
+              <p>Gửi notification tới nhiều user theo bộ lọc locale / premium</p>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div>
+              <div class="form-group">
+                <label for="bcTitle">Tiêu đề</label>
+                <input id="bcTitle" value="Canopy">
+              </div>
+              <div class="form-group">
+                <label for="bcBody">Nội dung <span class="req">*</span></label>
+                <textarea id="bcBody" placeholder="Khuyến mãi Premium 50%" rows="5"></textarea>
+              </div>
+            </div>
+            <div>
+              <div class="form-group">
+                <label for="bcLocale">Locale</label>
+                <select id="bcLocale">
+                  <option value="">Tất cả ngôn ngữ</option>
+                  <option value="vi">Tiếng Việt (vi)</option>
+                  <option value="en">English (en)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="bcPremium">Nhóm người dùng</label>
+                <select id="bcPremium">
+                  <option value="">Tất cả</option>
+                  <option value="true">Chỉ Premium</option>
+                  <option value="false">Chỉ Free</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="bcType">Loại thông báo (data.type)</label>
+                <select id="bcType">
+                  <option value="promo">promo</option>
+                  <option value="system">system</option>
+                  <option value="plant_reminder">plant_reminder</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="alert-warn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Broadcast sẽ gửi tới nhiều thiết bị. Hãy kiểm tra nội dung kỹ trước khi gửi.
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary" data-action="confirmBroadcast">Gửi broadcast</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Logs -->
       <section id="panel-logs" class="panel">
         <div class="card">
-          <div class="card-head row-head">
+          <div class="card-header row">
             <div>
               <h2>Nhật ký push</h2>
-              <p>Lịch sử gửi notification</p>
+              <p>Lịch sử gửi notification gần đây</p>
             </div>
-            <button type="button" class="btn btn-ghost btn-sm" data-action="loadLogs">Làm mới</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-action="loadLogs">Làm mới</button>
           </div>
-          <div id="logList" class="list-body"></div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Thời gian</th>
+                  <th>Tiêu đề</th>
+                  <th>Nội dung</th>
+                  <th>Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody id="logList"></tbody>
+            </table>
+          </div>
         </div>
       </section>
 
+      <!-- Settings -->
       <section id="panel-settings" class="panel">
-        <div class="card">
-          <div class="card-head">
-            <h2>Cài đặt kết nối</h2>
-            <p>API key và base URL</p>
+        <div class="card settings-card">
+          <div class="card-header">
+            <div>
+              <h2>Cài đặt kết nối</h2>
+              <p>Thay đổi API key và base URL</p>
+            </div>
           </div>
-          <label>API Base URL</label>
-          <input id="settingsBase" type="text">
-          <label>Admin API Key</label>
-          <input id="settingsKey" type="password">
-          <div class="btn-row">
-            <button type="button" class="btn btn-primary" data-action="saveSettings">Lưu</button>
-            <button type="button" class="btn btn-outline-danger" data-action="logout">Đăng xuất</button>
+          <div class="form-group">
+            <label for="settingsBase">API Base URL</label>
+            <input id="settingsBase" type="text" placeholder="/v1">
+          </div>
+          <div class="form-group">
+            <label for="settingsKey">Admin API Key</label>
+            <input id="settingsKey" type="password" placeholder="CANOPY_ADMIN_API_KEY">
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary" data-action="saveSettings">Lưu cài đặt</button>
+            <button type="button" class="btn btn-danger-outline" data-action="logout">Đăng xuất</button>
           </div>
         </div>
       </section>
+
     </main>
   </div>
 </div>
 
 <script src="mobile.js" defer></script>
+
+<!-- Premium modal -->
+<div id="premiumModal" class="modal hidden">
+  <div class="modal-backdrop" data-action="closePremiumModal"></div>
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <h2>Quản lý Premium</h2>
+        <p id="premiumModalUser" class="mono">—</p>
+      </div>
+      <button type="button" class="icon-btn" data-action="closePremiumModal" aria-label="Đóng">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="premiumCurrent" class="premium-status"></div>
+    <div class="form-group">
+      <label for="premiumPlan">Gói Premium</label>
+      <select id="premiumPlan">
+        <option value="monthly">Monthly — 30 ngày</option>
+        <option value="yearly">Yearly — 365 ngày</option>
+        <option value="lifetime">Lifetime — vĩnh viễn</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="premiumDays">Hoặc số ngày tuỳ chỉnh (tuỳ chọn)</label>
+      <input id="premiumDays" type="number" min="1" max="3650" placeholder="VD: 90">
+      <span class="hint">Để trống = dùng mặc định theo gói đã chọn</span>
+    </div>
+    <div class="btn-group">
+      <button type="button" class="btn btn-primary" data-action="grantPremium">Nâng Premium</button>
+      <button type="button" class="btn btn-danger-outline" data-action="revokePremium">Huỷ Premium</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

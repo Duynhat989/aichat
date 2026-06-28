@@ -5,6 +5,7 @@ let PushToken;
 let RefreshToken;
 let Subscription;
 let UsageDaily;
+let DailyActive;
 let NotificationLog;
 
 function registerModels(sequelize) {
@@ -76,6 +77,16 @@ function registerModels(sequelize) {
     { tableName: 'canopy_usage_daily', underscored: true, indexes: [{ unique: true, fields: ['user_id', 'date'] }] }
   );
 
+  DailyActive = sequelize.define(
+    'CanopyDailyActive',
+    {
+      id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
+      userId: { type: DataTypes.UUID, allowNull: false },
+      date: { type: DataTypes.STRING(10), allowNull: false }
+    },
+    { tableName: 'canopy_daily_active', underscored: true, indexes: [{ unique: true, fields: ['user_id', 'date'] }] }
+  );
+
   NotificationLog = sequelize.define(
     'CanopyNotificationLog',
     {
@@ -96,6 +107,7 @@ function registerModels(sequelize) {
   User.hasMany(RefreshToken, { foreignKey: 'userId', as: 'refreshTokens' });
   User.hasMany(Subscription, { foreignKey: 'userId', as: 'subscriptions' });
   User.hasMany(UsageDaily, { foreignKey: 'userId', as: 'usageDaily' });
+  User.hasMany(DailyActive, { foreignKey: 'userId', as: 'dailyActive' });
 }
 
 function getModels() {
@@ -104,7 +116,7 @@ function getModels() {
     err.code = 'DB_UNAVAILABLE';
     throw err;
   }
-  return { User, PushToken, RefreshToken, Subscription, UsageDaily, NotificationLog };
+  return { User, PushToken, RefreshToken, Subscription, UsageDaily, DailyActive, NotificationLog };
 }
 
 module.exports = { registerModels, getModels };

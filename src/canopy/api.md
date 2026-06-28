@@ -40,8 +40,12 @@ Tài liệu mô tả API backend Canopy cho mobile: đăng ký thiết bị, pre
 | `POST` | `/v1/billing/verify-android` | JWT | Xác minh Google Play |
 | `POST` | `/v1/usage/check` | JWT | Kiểm tra quota AI |
 | `POST` | `/v1/usage/consume` | JWT | Trừ lượt AI |
-| `GET` | `/v1/admin/stats` | Admin key | Thống kê |
+| `GET` | `/v1/admin/stats` | Admin key | Thống kê tổng quan |
+| `GET` | `/v1/admin/stats/daily-active` | Admin key | DAU theo ngày |
 | `GET` | `/v1/admin/users` | Admin key | Danh sách user |
+| `POST` | `/v1/admin/users` | Admin key | Tạo user (admin) |
+| `PATCH` | `/v1/admin/users/:userId/premium` | Admin key | Nâng / huỷ Premium |
+| `DELETE` | `/v1/admin/users/:userId` | Admin key | Xoá user |
 | `GET` | `/v1/admin/users/find` | Admin key | Tìm user |
 | `GET` | `/v1/admin/notifications/logs` | Admin key | Log push |
 | `POST` | `/v1/admin/notifications/send` | Admin key | Gửi push 1 user |
@@ -314,6 +318,19 @@ curl -sS "https://console.onewise.app/v1/admin/stats" \
   -H "X-Admin-API-Key: $ADMIN_KEY"
 ```
 
+**Response:** `totalUsers`, `premiumUsers`, `notificationsSent`, `activeToday`, `activeYesterday`
+
+---
+
+### `GET /v1/admin/stats/daily-active`
+
+Thống kê user truy cập mỗi ngày (DAU). Query: `days` (1–90, mặc định 14).
+
+```bash
+curl -sS "https://console.onewise.app/v1/admin/stats/daily-active?days=14" \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+
 ---
 
 ### `GET /v1/admin/users`
@@ -331,6 +348,70 @@ curl -sS "https://console.onewise.app/v1/admin/users?page=1&limit=20&search=gree
 curl -sS "https://console.onewise.app/v1/admin/users/find?q=greenid1081635559" \
   -H "X-Admin-API-Key: $ADMIN_KEY"
 ```
+
+---
+
+### `POST /v1/admin/users`
+
+Tạo user mới (admin).
+
+```bash
+curl -sS -X POST "https://console.onewise.app/v1/admin/users" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deviceId": "550e8400-e29b-41d4-a716-446655440000",
+    "platform": "android",
+    "appVersion": "1.0.0",
+    "locale": "vi",
+    "isPremium": false
+  }'
+```
+
+---
+
+### `DELETE /v1/admin/users/:userId`
+
+Xoá user theo UUID, greenid hoặc deviceId.
+
+```bash
+curl -sS -X DELETE "https://console.onewise.app/v1/admin/users/greenid1081635559" \
+  -H "X-Admin-API-Key: $ADMIN_KEY"
+```
+
+---
+
+### `PATCH /v1/admin/users/:userId/premium`
+
+Nâng hoặc huỷ Premium cho user.
+
+```bash
+# Nâng Premium monthly (30 ngày)
+curl -sS -X PATCH "https://console.onewise.app/v1/admin/users/greenid1081635559/premium" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"isPremium": true, "premiumPlan": "monthly"}'
+
+# Lifetime
+curl -sS -X PATCH "https://console.onewise.app/v1/admin/users/greenid1081635559/premium" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"isPremium": true, "premiumPlan": "lifetime"}'
+
+# Huỷ Premium
+curl -sS -X PATCH "https://console.onewise.app/v1/admin/users/greenid1081635559/premium" \
+  -H "X-Admin-API-Key: $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"isPremium": false}'
+```
+
+| `premiumPlan` | Thời hạn mặc định |
+|---------------|-------------------|
+| `monthly` | 30 ngày |
+| `yearly` | 365 ngày |
+| `lifetime` | Không hết hạn |
+
+Tuỳ chọn: `days` (số ngày tuỳ chỉnh) hoặc `premiumExpiresAt` (ISO datetime).
 
 ---
 

@@ -40,7 +40,11 @@ router.post('/usage/check', authMiddleware, usageController.check);
 router.post('/usage/consume', authMiddleware, usageController.consume);
 
 router.get('/admin/stats', adminMiddleware, adminController.stats);
+router.get('/admin/stats/daily-active', adminMiddleware, adminController.dailyActive);
 router.get('/admin/users', adminMiddleware, adminController.users);
+router.post('/admin/users', adminMiddleware, adminController.createUser);
+router.patch('/admin/users/:userId/premium', adminMiddleware, adminController.setPremium);
+router.delete('/admin/users/:userId', adminMiddleware, adminController.deleteUser);
 router.get('/admin/users/find', adminMiddleware, adminController.findUser);
 router.get('/admin/notifications/logs', adminMiddleware, adminController.logs);
 router.post('/admin/notifications/send', adminMiddleware, adminController.send);
