@@ -36,12 +36,12 @@
     {
       id: "onewise_v1",
       name: "OneWise V1",
-      model: "gemma3:12b",
+      model: process.env.OLLAMA_MODEL,
     },
     {
       id: "onewise_v2",
       name: "OneWise V2",
-      model: "gemma3:27b",
+      model: process.env.OLLAMA_MODEL,
     }
   ];
   const filesTemp = new Map();

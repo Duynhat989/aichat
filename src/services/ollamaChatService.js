@@ -3,7 +3,7 @@ class OllamaChatService {
     this.baseUrl = String(
       options.baseUrl || process.env.OLLAMA_BASE_URL || 'https://ollama.com'
     ).replace(/\/$/, '');
-    this.model = options.model || process.env.OLLAMA_MODEL || 'gemma3:27b';
+    this.model = options.model || process.env.OLLAMA_MODEL || 'gemma4';
     this.apiKey = options.apiKey || process.env.OLLAMA_KEY || process.env.OLLAMA_API_KEY || '';
     this.timeoutMs = Number(options.timeoutMs || process.env.OLLAMA_TIMEOUT_MS || 120000);
   }
