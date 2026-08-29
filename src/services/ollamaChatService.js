@@ -1,11 +1,9 @@
 class OllamaChatService {
   constructor(options = {}) {
-    this.baseUrl = String(
-      options.baseUrl || process.env.OLLAMA_BASE_URL || 'https://ollama.com'
-    ).replace(/\/$/, '');
-    this.model = options.model || process.env.OLLAMA_MODEL || 'gemma4';
-    this.apiKey = options.apiKey || process.env.OLLAMA_KEY || process.env.OLLAMA_API_KEY || '';
-    this.timeoutMs = Number(options.timeoutMs || process.env.OLLAMA_TIMEOUT_MS || 120000);
+    this.baseUrl = String(options.baseUrl || 'https://ollama.com').replace(/\/$/, '');
+    this.model = options.model || 'gemma3:27b';
+    this.apiKey = options.apiKey || '';
+    this.timeoutMs = Number(options.timeoutMs || 120000);
   }
 
   static geminiContentsToCloudMessages(contents, msgInstruction) {
@@ -50,7 +48,7 @@ class OllamaChatService {
 
   async chat(messages, opts = {}) {
     if (!this.apiKey) {
-      const err = new Error('OLLAMA_KEY is not configured');
+      const err = new Error('Ollama API key is not configured');
       err.statusCode = 503;
       throw err;
     }

@@ -9,82 +9,57 @@ const router = express.Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB
+    fileSize: 10 * 1024 * 1024
   }
 });
 
-// =========================
-// MODELS
-// =========================
+function withEndpoint(endpoint) {
+  return (req, res, next) => {
+    req.ollamaEndpoint = endpoint;
+    next();
+  };
+}
 
 router.get('/models', aiChatController.getModel);
 
-// =========================
-// AI CHAT
-// =========================
-
 router.post(
   '/chat-completion',
+  withEndpoint('aichat'),
   (req, res, next) => traffic('aichat', next),
   aiChatController.chatCompletionWithLimit
 );
 
-
-// =========================
-// SPELL CHECKER
-// =========================
-
 router.post(
   '/spell-check',
+  withEndpoint('spellchecker'),
   (req, res, next) => traffic('spellchecker', next),
   aiChatController.chatCompletionWithLimit
 );
 
-// =========================
-// SUMMARIZE
-// =========================
-
 router.post(
   '/summarize',
+  withEndpoint('summarize'),
   (req, res, next) => traffic('summarize', next),
   aiChatController.chatCompletionWithLimit
 );
 
-// =========================
-// TRANSLATE
-// =========================
-
 router.post(
   '/translate',
+  withEndpoint('translate'),
   (req, res, next) => traffic('translate', next),
   aiChatController.chatCompletionWithLimit
 );
 
-// =========================
-// STUDY GUIDE
-// =========================
-
 router.post(
   '/study-guide',
+  withEndpoint('studyguide'),
   (req, res, next) => traffic('studyguide', next),
   aiChatController.chatCompletionWithLimit
 );
 
-
-
-
-// =========================
-// ADD FILE
-// =========================
-
 router.post(
   '/add-file',
-  upload.fields([
-    {
-      name: 'file',
-      maxCount: 1
-    }
-  ]),
+  upload.fields([{ name: 'file', maxCount: 1 }]),
   aiChatController.addFile
 );
 

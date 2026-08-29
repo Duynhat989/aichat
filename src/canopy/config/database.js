@@ -1,6 +1,7 @@
 require('dotenv').config();
 const { Sequelize } = require('sequelize');
 const { registerModels } = require('../models');
+const { registerOllamaModels } = require('../../ollama/models');
 
 let lastDbError = null;
 
@@ -40,6 +41,7 @@ function buildSequelize() {
 
 const sequelize = buildSequelize();
 registerModels(sequelize);
+registerOllamaModels(sequelize);
 
 let ready = false;
 
@@ -54,6 +56,19 @@ async function initializeCanopyDatabase() {
       ready = true;
       lastDbError = null;
       console.log('Canopy MySQL tables ready (canopy_*).');
+
+      try {
+        const keyPool = require('../../ollama/keyPool');
+        await keyPool.seedDefaultsIfEmpty();
+        console.log(
+          'Key pool loaded:',
+          keyPool.getRealtimeSnapshot().totalKeyCount,
+          'keys'
+        );
+      } catch (seedErr) {
+        console.error('Pool seed failed:', seedErr.message);
+      }
+
       return true;
     } catch (error) {
       ready = false;

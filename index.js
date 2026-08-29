@@ -66,6 +66,7 @@ async function startServer() {
   server.listen(PORT, () => {
     console.log(`AI Chat API listening on port ${PORT}`);
     console.log(`Canopy API: /v1`);
+    console.log(`Ollama Dash: /dash.html  |  API /api/dash`);
   });
 }
 

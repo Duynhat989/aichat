@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dash Translator</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="dash.css">
+</head>
+<body>
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="login-mark">OL</div>
+        <h1>Dash</h1>
+        <p>Quản lý key, model, realtime &amp; thống kê</p>
+      </div>
+      <label class="field">
+        <span>Admin API Key</span>
+        <input id="apiKeyInput" type="password" placeholder="CANOPY_ADMIN_API_KEY / DASH_ADMIN_API_KEY" autocomplete="off">
+      </label>
+      <label class="field">
+        <span>API Base</span>
+        <input id="baseUrlInput" type="text" value="/api/dash">
+      </label>
+      <button type="button" class="btn btn-primary btn-block" id="loginBtn">Đăng nhập</button>
+      <p id="loginError" class="error-text hidden"></p>
+    </div>
+  </div>
+
+  <div id="app" class="app hidden">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">OL</div>
+        <div>
+          <strong>Ollama Dash</strong>
+          <span>Ops console</span>
+        </div>
+      </div>
+      <nav class="nav">
+        <button type="button" class="nav-item active" data-panel="realtime">Realtime</button>
+        <button type="button" class="nav-item" data-panel="keys">Keys</button>
+        <button type="button" class="nav-item" data-panel="models">Models</button>
+        <button type="button" class="nav-item" data-panel="history">Lịch sử</button>
+        <button type="button" class="nav-item" data-panel="daily">Thống kê ngày</button>
+        <button type="button" class="nav-item" data-panel="endpoint">Theo endpoint</button>
+        <button type="button" class="nav-item" data-panel="settings">Cài đặt</button>
+      </nav>
+      <div class="sidebar-foot">
+        <button type="button" class="btn btn-ghost btn-sm" id="logoutBtn">Đăng xuất</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <h1 id="pageTitle">Realtime</h1>
+        <div class="topbar-actions">
+          <span class="pill" id="connPill">/api/dash</span>
+          <button type="button" class="btn btn-secondary btn-sm" id="refreshBtn">Làm mới</button>
+        </div>
+      </header>
+
+      <!-- Realtime -->
+      <section id="panel-realtime" class="panel">
+        <div class="stat-grid" id="realtimeStats"></div>
+        <div class="card">
+          <div class="card-head">
+            <h2>Key đang chạy</h2>
+            <span class="muted" id="rtUpdated">—</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Label</th>
+                  <th>Key</th>
+                  <th>Trạng thái</th>
+                  <th>Đang chạy</th>
+                  <th>Giới hạn</th>
+                  <th>OK / Err</th>
+                  <th>Last used</th>
+                </tr>
+              </thead>
+              <tbody id="realtimeKeysBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Keys -->
+      <section id="panel-keys" class="panel hidden">
+        <div class="card">
+          <div class="card-head">
+            <h2>Quản lý</h2>
+            <button type="button" class="btn btn-primary btn-sm" id="addKeyBtn">Thêm key</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Label</th>
+                  <th>Key</th>
+                  <th>Enabled</th>
+                  <th>Max concurrent</th>
+                  <th>Running</th>
+                  <th>Stats</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="keysBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Models -->
+      <section id="panel-models" class="panel hidden">
+        <div class="card">
+          <div class="card-head">
+            <h2>Quản lý models</h2>
+            <button type="button" class="btn btn-primary btn-sm" id="addModelBtn">Thêm model</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Tên</th>
+                  <th>Upstream model</th>
+                  <th>Enabled</th>
+                  <th>Order</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="modelsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- History -->
+      <section id="panel-history" class="panel hidden">
+        <div class="card">
+          <div class="card-head">
+            <h2>Lịch sử request</h2>
+            <div class="filters">
+              <select id="histEndpoint">
+                <option value="">Tất cả endpoint</option>
+                <option value="aichat">aichat</option>
+                <option value="spellchecker">spellchecker</option>
+                <option value="summarize">summarize</option>
+                <option value="translate">translate</option>
+                <option value="studyguide">studyguide</option>
+              </select>
+              <select id="histStatus">
+                <option value="">Tất cả status</option>
+                <option value="running">running</option>
+                <option value="completed">completed</option>
+                <option value="error">error</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Thời gian</th>
+                  <th>Endpoint</th>
+                  <th>Key</th>
+                  <th>Model</th>
+                  <th>Status</th>
+                  <th>ms</th>
+                  <th>Error</th>
+                </tr>
+              </thead>
+              <tbody id="historyBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Daily -->
+      <section id="panel-daily" class="panel hidden">
+        <div class="card">
+          <div class="card-head">
+            <h2>Thống kê theo ngày</h2>
+            <select id="dailyDays">
+              <option value="7">7 ngày</option>
+              <option value="30" selected>30 ngày</option>
+              <option value="90">90 ngày</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ngày</th>
+                  <th>Tổng RQ</th>
+                  <th>Thành công</th>
+                  <th>Lỗi</th>
+                  <th>Tổng thời gian (ms)</th>
+                  <th>TB (ms)</th>
+                </tr>
+              </thead>
+              <tbody id="dailyBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Endpoint -->
+      <section id="panel-endpoint" class="panel hidden">
+        <div class="card">
+          <div class="card-head">
+            <h2>Thống kê theo endpoint</h2>
+            <input id="endpointDate" type="date" title="Lọc theo ngày (trống = nhiều ngày)">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ngày</th>
+                  <th>Endpoint</th>
+                  <th>Tổng RQ</th>
+                  <th>OK</th>
+                  <th>Err</th>
+                  <th>Tổng ms</th>
+                  <th>TB ms</th>
+                </tr>
+              </thead>
+              <tbody id="endpointBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings -->
+      <section id="panel-settings" class="panel hidden">
+        <div class="card">
+          <div class="card-head"><h2>Cài đặt</h2></div>
+          <form id="settingsForm" class="form-grid">
+            <label class="field">
+              <span>ollama_base_url</span>
+              <input name="ollama_base_url" type="text">
+            </label>
+            <label class="field">
+              <span>ollama_timeout_ms</span>
+              <input name="ollama_timeout_ms" type="number" min="1000">
+            </label>
+            <label class="field">
+              <span>default_max_concurrent</span>
+              <input name="default_max_concurrent" type="number" min="1">
+            </label>
+            <label class="field">
+              <span>history_retention_days</span>
+              <input name="history_retention_days" type="number" min="1">
+            </label>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Lưu cài đặt</button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="modalTitle">Form</h3>
+        <button type="button" class="icon-btn" data-close>&times;</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="dash.js"></script>
+</body>
+</html>
