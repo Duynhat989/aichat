@@ -1,6 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const { extractDocumentText } = require('../utils/fileExtract');
+const fileStore = require('../utils/fileStore');
 const { OllamaChatService } = require('../services/ollamaChatService');
 const keyPool = require('../ollama/keyPool');
 const statsService = require('../ollama/statsService');
@@ -11,32 +12,37 @@ function fail(res, status, message) {
   return res.status(status).json({ success: false, message });
 }
 
-async function docContextFromFile(file) {
-  if (!file) return '';
-  if (file.buffer.length > 5 * 1024 * 1024) {
-    const e = new Error('Document exceeds 5MB');
-    e.statusCode = 400;
-    throw e;
-  }
-  return extractDocumentText(file.buffer, file.mimetype, file.originalname);
+/** Ollama expects raw base64 (no data: URI prefix). */
+function toOllamaImageBase64(input) {
+  const s = String(input || '').trim();
+  if (!s) return '';
+  const m = /^data:[^;]+;base64,(.+)$/is.exec(s);
+  const raw = m ? m[1] : s;
+  return raw.replace(/\s+/g, '');
 }
 
-async function imgContextFromFile(file) {
-  if (!file) return '';
+async function resolveFileForChat(fileId) {
+  const loaded = await fileStore.loadBuffer(fileId);
+  if (!loaded) return null;
+  const { meta, buffer } = loaded;
 
-  if (file.buffer.length > 10 * 1024 * 1024) {
-    const e = new Error('Image exceeds 10MB');
-    e.statusCode = 400;
-    throw e;
+  if (meta.type === 'image') {
+    return {
+      type: 'image',
+      name: meta.name,
+      text: buffer.toString('base64')
+    };
   }
 
-  const mimeType = file.mimetype || 'image/png';
-  const base64 = file.buffer.toString('base64');
-  return `data:${mimeType};base64,${base64}`;
+  const text = await extractDocumentText(buffer, meta.mimeType, meta.name);
+  return {
+    type: 'document',
+    name: meta.name,
+    text
+  };
 }
 
 const historyMessages = new Map();
-const filesTemp = new Map();
 
 async function resolveModels() {
   if (isCanopyDatabaseReady()) {
@@ -218,17 +224,16 @@ const aiChatController = {
       if (files.length > 0) {
         const imgs = [];
         for (const file of files) {
-          const fileData = filesTemp.get(file.fileId);
+          const fileData = await resolveFileForChat(file.fileId);
           if (fileData) {
             if (fileData.type === 'image') {
-              const pureBase64 = fileData.text.replace(/^data:image\/\w+;base64,/, '');
-              imgs.push(pureBase64);
+              const pureBase64 = toOllamaImageBase64(fileData.text);
+              if (pureBase64) imgs.push(pureBase64);
             } else {
               messages.push({
                 role: 'user',
-                content: `This is a document file(name: ${fileData.originalname}, type: ${fileData.type}) \n Content: ${fileData.text}`
+                content: `This is a document file(name: ${fileData.name}, type: ${fileData.type}) \n Content: ${fileData.text}`
               });
-              break;
             }
           }
         }
@@ -359,16 +364,14 @@ const aiChatController = {
   },
 
   async clearFile(fileId) {
-    setTimeout(() => {
-      filesTemp.delete(fileId);
-    }, 1000 * 60 * 10);
+    fileStore.scheduleExpire(fileId);
     return true;
   },
 
   async addFile(req, res) {
     try {
       const fileUpload = req.files?.file?.[0];
-      const ext = path.extname(fileUpload?.originalname).toLowerCase();
+      const ext = path.extname(fileUpload?.originalname || '').toLowerCase();
       if (!fileUpload) {
         return fail(res, 400, 'No file uploaded');
       }
@@ -390,27 +393,14 @@ const aiChatController = {
         return fail(res, 400, 'Document size must be less than 5MB');
       }
 
-      if (type === 'image') {
-        const imgText = await imgContextFromFile(fileUpload);
-        filesTemp.set(fileId, {
-          fileId,
-          type: 'image',
-          name: fileUpload.originalname,
-          text: imgText,
-          mimeType: ext
-        });
-      }
-      if (type === 'document') {
-        const docText = await docContextFromFile(fileUpload);
-        filesTemp.set(fileId, {
-          fileId,
-          type: 'document',
-          name: fileUpload.originalname,
-          text: docText,
-          mimeType: ext
-        });
-      }
-      aiChatController.clearFile(fileId);
+      await fileStore.saveUpload({
+        fileId,
+        type,
+        originalname: fileUpload.originalname,
+        mimetype: fileUpload.mimetype,
+        ext,
+        buffer: fileUpload.buffer
+      });
 
       return res.json({
         success: true,
@@ -418,7 +408,7 @@ const aiChatController = {
       });
     } catch (error) {
       console.error(error);
-      return fail(res, 500, error.message);
+      return fail(res, error.statusCode || 500, error.message);
     }
   }
 };

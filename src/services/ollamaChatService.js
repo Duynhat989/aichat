@@ -1,3 +1,24 @@
+/** Strip data-URI / whitespace so Ollama ImageData accepts the string. */
+function toOllamaImageBase64(input) {
+  const s = String(input || '').trim();
+  if (!s) return '';
+  const m = /^data:[^;]+;base64,(.+)$/is.exec(s);
+  const raw = m ? m[1] : s;
+  return raw.replace(/\s+/g, '');
+}
+
+function sanitizeMessagesImages(messages) {
+  return (messages || []).map((msg) => {
+    if (!msg || !Array.isArray(msg.images) || msg.images.length === 0) return msg;
+    const images = msg.images.map(toOllamaImageBase64).filter(Boolean);
+    if (!images.length) {
+      const { images: _drop, ...rest } = msg;
+      return rest;
+    }
+    return { ...msg, images };
+  });
+}
+
 class OllamaChatService {
   constructor(options = {}) {
     this.baseUrl = String(options.baseUrl || 'https://ollama.com').replace(/\/$/, '');
@@ -18,7 +39,10 @@ class OllamaChatService {
       const images = [];
       for (const part of item.parts || []) {
         if (part.text) text += `${part.text}\n`;
-        if (part.inlineData?.data) images.push(part.inlineData.data);
+        if (part.inlineData?.data) {
+          const b64 = toOllamaImageBase64(part.inlineData.data);
+          if (b64) images.push(b64);
+        }
       }
       messages.push({
         role,
@@ -35,8 +59,8 @@ class OllamaChatService {
     for (const p of parts || []) {
       if (p.type === 'text' && p.text) text += p.text;
       if (p.type === 'image_url' && p.image_url?.url) {
-        const m = /^data:([^;]+);base64,(.+)$/i.exec(String(p.image_url.url));
-        if (m) images.push(m[2]);
+        const b64 = toOllamaImageBase64(p.image_url.url);
+        if (b64) images.push(b64);
       }
     }
     return {
@@ -63,7 +87,7 @@ class OllamaChatService {
       instructions: instructions || '',
       model: opts.model || this.model,
       stream: false,
-      messages
+      messages: sanitizeMessagesImages(messages)
     };
 
     const controller = new AbortController();
@@ -116,7 +140,7 @@ class OllamaChatService {
       // instructions: opts.instructions || '',
       model: opts.model || this.model,
       stream: true,
-      messages
+      messages: sanitizeMessagesImages(messages)
     };
 
     const res = await fetch(url, {
@@ -219,7 +243,7 @@ class OllamaChatService {
         instructions: opts.instructions || '',
         model: opts.model || this.model,
         stream: false,
-        messages
+        messages: sanitizeMessagesImages(messages)
       };
       const res = await fetch(url, {
         method: 'POST',
